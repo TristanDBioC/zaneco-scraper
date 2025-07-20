@@ -1,20 +1,26 @@
-version: '3.8'
 services:
-  name: scraper
   scraper:
+    container_name: scraper
     build:
-      context: https://github.com/TristanDBioC/zaneco-scraper.git#main:scraper
+      context: ./scraper
     env_file:
       - ./scraper/.env
     restart: always
     depends_on:
       - mongo
+    volumes:
+      - ./scraper/data:/app/data
 
   mongo:
-    name: scraper-mongodb
+    container_name: scraper-mongodb
     image: mongo:7
     restart: always
     ports:
       - "27017:27017"
     environment:
       MONGO_INITDB_DATABASE: zaneco
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
