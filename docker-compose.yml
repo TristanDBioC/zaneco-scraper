@@ -9,7 +9,7 @@ services:
     depends_on:
       - mongo
     volumes:
-      - ./scraper/data:/app/data
+      - ./scraper:/app
 
   mongo:
     container_name: scraper-mongodb

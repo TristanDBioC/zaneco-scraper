@@ -10,6 +10,7 @@ sheet_id = os.getenv("SHEET_ID")
 mongo_uri = os.getenv("MONGO_URI")
 gid = "0"
 
+
 csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
 
 # Read the sheet into a DataFrame
@@ -19,6 +20,29 @@ df_new = pd.read_csv(csv_url)
 df_new = df_new.applymap(
     lambda x: x.replace('\u202f', ' ') if isinstance(x, str) else x
 )
+
+# Fill empty DATE values
+from pandas.api.types import is_string_dtype
+current_date_str = datetime.now().strftime("%-m/%-d/%Y") if os.name != 'nt' else datetime.now().strftime("%#m/%#d/%Y")
+if 'DATE' in df_new.columns:
+    def fill_date(col):
+        filled = []
+        for i, val in enumerate(col):
+            if pd.isna(val) or (isinstance(val, str) and val.strip() == ""):
+                if i > 0:
+                    filled.append(filled[-1])
+                else:
+                    filled.append(current_date_str)
+            else:
+                filled.append(val)
+        return filled
+    df_new['DATE'] = fill_date(df_new['DATE'])
+
+# Fill empty POWER INTERRUPTION values
+if 'POWER INTERRUPTION' in df_new.columns:
+    df_new['POWER INTERRUPTION'] = df_new['POWER INTERRUPTION'].apply(
+        lambda x: "UNSCHEDULED POWER INTERRUPTION" if pd.isna(x) or (isinstance(x, str) and x.strip() == "") else x
+    )
 
 # Columns to use as unique key
 unique_cols = ["POWER INTERRUPTION", "DATE", "AFFECTED AREA/S", "TIME INTERRUPTED"]
