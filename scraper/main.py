@@ -44,6 +44,10 @@ if 'POWER INTERRUPTION' in df_new.columns:
         lambda x: "UNSCHEDULED POWER INTERRUPTION" if pd.isna(x) or (isinstance(x, str) and x.strip() == "") else x
     )
 
+# Remove rows where 'AFFECTED AREA/S' is empty or blank
+if 'AFFECTED AREA/S' in df_new.columns:
+    df_new = df_new[~(df_new['AFFECTED AREA/S'].isna() | (df_new['AFFECTED AREA/S'].astype(str).str.strip() == ""))]
+
 # Columns to use as unique key
 unique_cols = ["POWER INTERRUPTION", "DATE", "AFFECTED AREA/S", "TIME INTERRUPTED"]
 
